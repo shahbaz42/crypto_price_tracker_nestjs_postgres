@@ -4,7 +4,7 @@ import { LessThanOrEqual, Repository } from 'typeorm';
 import { CreateAlertDto, FetchAlertsDto } from './cpt.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CryptoPriceNotificationsEntity } from './entities/crypto.price.notification.entity';
-import { logAndHandleAPIError } from '@app/common';
+import { addOrdering, addPagination, logAndHandleAPIError } from '@app/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { CryptoPriceEntity } from './entities/crypto.price.entity';
 
@@ -49,16 +49,25 @@ export class CptService {
    */
   async fetchAlerts(fetchAlertsDto: FetchAlertsDto) {
     try {
-      const alerts = await this.cryptoPriceNotificationsRepository.find({
-        where: {
-          email: fetchAlertsDto.email,
-        },
+      const { email, limit, skip, order, order_by } = fetchAlertsDto;
+
+      const query = this.cryptoPriceNotificationsRepository.createQueryBuilder(
+        'crypto_price_notifications',
+      );
+      query.where('crypto_price_notifications.email = :email', {
+        email: email,
       });
+
+      addPagination(query, limit, skip);
+      addOrdering(query, order_by, order);
+
+      const [alerts, count] = await query.getManyAndCount();
 
       return {
         message: 'Alerts fetched successfully',
         status: HttpStatus.OK,
         data: alerts,
+        count,
       };
     } catch (error) {
       logAndHandleAPIError(this.logger, error);
