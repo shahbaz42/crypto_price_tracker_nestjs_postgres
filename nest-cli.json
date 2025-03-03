@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "./",
+  "entryFile": "src/main",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/crypto-price-tracker/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/crypto-price-tracker",
+  "projects": {
+    "common": {
+      "type": "library",
+      "root": "libs/common",
+      "entryFile": "index",
+      "sourceRoot": "libs/common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/common/tsconfig.lib.json"
+      }
+    },
+    "crypto-price-tracker": {
+      "type": "application",
+      "root": "apps/crypto-price-tracker",
+      "entryFile": "main",
+      "sourceRoot": "apps/crypto-price-tracker/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/crypto-price-tracker/tsconfig.app.json"
+      }
+    }
+  }
+}

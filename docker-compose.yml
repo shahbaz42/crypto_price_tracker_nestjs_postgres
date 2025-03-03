@@ -1,0 +1,44 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:15
+    container_name: crypto-postgres
+    restart: always
+    ports:
+      - "5433:5432"
+    networks:
+      - app_network
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456789
+      POSTGRES_DB: crypto_price_tracker
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  crypto-price-tracker:
+    container_name: crypto-price-tracker
+    build:
+      context: .
+      args:
+        - APP=crypto-price-tracker
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - 8000:3000
+    networks:
+      - app_network
+    environment:
+      - AUTH_GRPC_URL=auth:50001
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456789
+      - POSTGRES_DB=crypto_price_tracker
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

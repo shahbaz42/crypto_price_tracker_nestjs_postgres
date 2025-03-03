@@ -1,0 +1,48 @@
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { CountryCodesEnum, IS3FileType } from '../types';
+
+export class PhoneNumberDTO {
+  @IsEnum(CountryCodesEnum)
+  @IsNotEmpty()
+  country_code: CountryCodesEnum;
+
+  @IsString()
+  @IsNotEmpty()
+  number: string;
+}
+
+export class S3FileWithMetadataDTO {
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @IsString()
+  @IsNotEmpty()
+  host: string;
+
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @IsEnum(IS3FileType)
+  @IsOptional()
+  type?: IS3FileType;
+
+  @IsString()
+  @IsOptional()
+  extension?: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @IsNumber()
+  @IsOptional()
+  duration?: number;
+}
