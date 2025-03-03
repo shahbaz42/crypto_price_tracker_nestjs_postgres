@@ -5,15 +5,24 @@ import { CryptoNameEnum, CryptoSymbolEnum } from '@app/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CryptoPriceEntity } from './entities/crypto.price.entity';
 import { Repository } from 'typeorm';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class CptHelpers {
   private logger = new Logger(CptHelpers.name);
+  private transporter: nodemailer.Transporter;
   constructor(
     @InjectRepository(CryptoPriceEntity)
     private readonly cryptoPriceRepository: Repository<CryptoPriceEntity>,
   ) {
     this.initMoralis();
+    this.transporter = nodemailer.createTransport({
+      service: 'gmail', // You can use other providers or SMTP settings
+      auth: {
+        user: process.env.EMAIL_USER, // Your email
+        pass: process.env.EMAIL_PASS, // App password or actual password (if SMTP)
+      },
+    });
   }
 
   private async initMoralis() {
@@ -61,6 +70,21 @@ export class CptHelpers {
       await this.cryptoPriceRepository.save(cryptoPrice);
     } catch (error) {
       this.logger.error('Error saving ETH price', error);
+    }
+  }
+
+  async sendEmail({ to, subject, body }) {
+    try {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to,
+        subject,
+        text: body,
+      };
+
+      await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      this.logger.error('Error sending email', error);
     }
   }
 }
