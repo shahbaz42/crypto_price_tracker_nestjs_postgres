@@ -8,6 +8,8 @@ import { CptHelpers } from './cpt.helpers';
 import { CryptoPriceEntity } from './entities/crypto.price.entity';
 import { CptCronService } from './cpt.cron.service';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CryptoPriceNotificationsEntity } from './entities/crypto.price.notification.entity';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -15,8 +17,12 @@ import { ScheduleModule } from '@nestjs/schedule';
       envFilePath: ['.env.crypto-price-tracker'],
     }),
     TypeOrmModule.forRootAsync(typeOrmModuleOptions()),
-    TypeOrmModule.forFeature([CryptoPriceEntity]),
+    TypeOrmModule.forFeature([
+      CryptoPriceEntity,
+      CryptoPriceNotificationsEntity,
+    ]),
     ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot(),
   ],
   controllers: [CptController],
   providers: [CptService, CptHelpers, CptCronService],

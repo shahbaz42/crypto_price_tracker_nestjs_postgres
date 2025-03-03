@@ -4,12 +4,17 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('crypto_price')
-export class CryptoPriceEntity extends BaseEntity {
+@Entity('crypto_price_notifications')
+@Index('idx_crypto_price_notifications_symbol_price', [
+  'symbol',
+  'target_usd_price',
+])
+export class CryptoPriceNotificationsEntity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id: string;
 
@@ -22,28 +27,20 @@ export class CryptoPriceEntity extends BaseEntity {
   symbol: CryptoSymbolEnum;
 
   @Column({
-    type: 'enum',
-    name: 'name',
-    enum: CryptoNameEnum,
-    nullable: false,
-  })
-  name: CryptoNameEnum;
-
-  @Column({
-    name: 'usd_price',
+    name: 'target_usd_price',
     type: 'decimal',
     precision: 18,
     scale: 8,
     nullable: false,
   })
-  usd_price: number;
+  target_usd_price: number;
 
   @Column({
-    name: 'block_timestamp',
-    type: 'timestamp',
+    name: 'email',
+    type: 'varchar',
     nullable: false,
   })
-  block_timestamp: Date;
+  email: string;
 
   @CreateDateColumn({
     name: 'created_at',
