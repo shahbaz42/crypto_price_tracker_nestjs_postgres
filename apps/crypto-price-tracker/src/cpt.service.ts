@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CptHelpers } from './cpt.helpers';
 import { DataSource } from 'typeorm';
 
@@ -17,6 +17,9 @@ export class CptService {
       body: 'This is a test email',
     });
 
-    return 'Mail Sent';
+    return {
+      message: 'Email sent successfully',
+      statusCode: HttpStatus.OK,
+    };
   }
 }
