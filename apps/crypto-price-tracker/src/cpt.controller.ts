@@ -6,7 +6,7 @@ export class CptController {
   constructor(private readonly cptService: CptService) {}
 
   @Get('/')
-  getHello(): string {
+  getHello() {
     return this.cptService.getHello();
   }
 }

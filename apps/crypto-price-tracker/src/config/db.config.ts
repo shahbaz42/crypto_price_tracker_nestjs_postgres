@@ -2,6 +2,7 @@ import {
   TypeOrmModuleAsyncOptions,
   TypeOrmModuleOptions,
 } from '@nestjs/typeorm';
+import { join } from 'path';
 
 export default () => {
   const typeOrmModuleOptions: TypeOrmModuleAsyncOptions = {
@@ -13,6 +14,7 @@ export default () => {
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       autoLoadEntities: true,
+      entities: [join(__dirname, '../../**/*.entity.{ts,js}')],
       synchronize: true,
     }),
   };

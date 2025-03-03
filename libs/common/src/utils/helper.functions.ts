@@ -49,7 +49,7 @@ export function addOrdering<T>(
  * @param error - The error object to be logged and handled.
  * @throws HttpException - If the error is an instance of HttpException or EntityNotFoundError.
  */
-export function logAndHandleError(logger: Logger, error: any) {
+export function logAndHandleAPIError(logger: Logger, error: any) {
   logger.error(error);
 
   if (error instanceof HttpException) {

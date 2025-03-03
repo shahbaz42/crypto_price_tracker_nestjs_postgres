@@ -5,12 +5,9 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { CountryCodesEnum, IS3FileType } from '../types';
 
 export class PhoneNumberDTO {
-  @IsEnum(CountryCodesEnum)
-  @IsNotEmpty()
-  country_code: CountryCodesEnum;
+
 
   @IsString()
   @IsNotEmpty()
@@ -29,10 +26,6 @@ export class S3FileWithMetadataDTO {
   @IsString()
   @IsOptional()
   name?: string;
-
-  @IsEnum(IS3FileType)
-  @IsOptional()
-  type?: IS3FileType;
 
   @IsString()
   @IsOptional()
