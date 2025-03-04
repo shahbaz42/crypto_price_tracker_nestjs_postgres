@@ -92,6 +92,96 @@ export class CptHelpers {
   }
 
   /**
+   * Fetches the price of Bitcoin (BTC).
+   *
+   * @returns A promise that resolves to the price of Bitcoin.
+   * @throws If there is an error while fetching the price.
+   */
+  async fetchBtcPrice() {
+    try {
+      // Bitcoin doesn't have a token contract address like ERC-20 tokens,
+      // but Moralis Price API can fetch its price using its identifier.
+      const response = await Moralis.EvmApi.token.getTokenPrice({
+        address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', // WBTC address on Ethereum as a proxy
+        chain: EvmChain.ETHEREUM, // Using Wrapped Bitcoin (WBTC) on Ethereum Mainnet
+      });
+
+      return response;
+    } catch (error) {
+      this.logger.error('Error fetching BTC price', error);
+    }
+  }
+
+  /**
+   * Saves the BTC price to the crypto price repository.
+   *
+   * @returns The saved crypto price object.
+   */
+  async saveBtcPrice() {
+    try {
+      const response = (await this.fetchBtcPrice()) as any;
+      const btcPrice = response.jsonResponse;
+
+      const cryptoPrice = this.cryptoPriceRepository.create({
+        symbol: CryptoSymbolEnum.BTC,
+        name: CryptoNameEnum.BITCOIN,
+        usd_price: btcPrice.usdPrice,
+        block_timestamp: new Date(Number(btcPrice.blockTimestamp)),
+      });
+
+      await this.cryptoPriceRepository.save(cryptoPrice);
+
+      return cryptoPrice;
+    } catch (error) {
+      this.logger.error('Error saving BTC price', error);
+    }
+  }
+
+  /**
+   * Fetches the price of Solana (SOL).
+   *
+   * @returns A promise that resolves to the price of Solana.
+   * @throws If there is an error while fetching the price.
+   */
+  async fetchSolPrice() {
+    try {
+      const response = await Moralis.SolApi.token.getTokenPrice({
+        network: 'mainnet', // Solana Mainnet
+        address: 'So11111111111111111111111111111111111111112', // SOL's Wrapped address
+      });
+
+      return response;
+    } catch (error) {
+      this.logger.error('Error fetching SOL price', error);
+    }
+  }
+
+  /**
+   * Saves the price of SOL cryptocurrency.
+   *
+   * @returns The saved crypto price object.
+   */
+  async saveSolPrice() {
+    try {
+      const response = (await this.fetchSolPrice()) as any;
+      const solPrice = response.jsonResponse;
+
+      const cryptoPrice = this.cryptoPriceRepository.create({
+        symbol: CryptoSymbolEnum.SOL,
+        name: CryptoNameEnum.SOLANA,
+        usd_price: solPrice.usdPrice,
+        block_timestamp: new Date(Date.now()),
+      });
+
+      await this.cryptoPriceRepository.save(cryptoPrice);
+
+      return cryptoPrice;
+    } catch (error) {
+      this.logger.error('Error saving SOL price', error);
+    }
+  }
+
+  /**
    * Sends an email with the specified recipient, subject, and body.
    *
    * @param {Object} options - The email options.

@@ -130,8 +130,6 @@ export class CptService {
       const yesterday = new Date(now);
       yesterday.setDate(now.getDate() - 1);
 
-      console.log(yesterday);
-
       query.andWhere('crypto_price.block_timestamp >= :yesterday', {
         yesterday,
       });
