@@ -114,3 +114,23 @@ export class Last24hPricesResponse {
   })
   data: Last24hPricesResponseData;
 }
+
+export class SimulateCyptoPriceDto {
+  @ApiProperty({
+    description: 'Cryptocurrency symbol',
+    enum: Object.values(CryptoSymbolEnum),
+    example: 'ETH',
+  })
+  @IsEnum(CryptoSymbolEnum)
+  @IsNotEmpty()
+  symbol: CryptoSymbolEnum;
+
+  @ApiProperty({
+    description: 'Current price in USD',
+    type: Number,
+    example: 2500.75,
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  usd_price: number;
+}

@@ -6,12 +6,27 @@ import {
   FetchAlertsDto,
   FetchLast24hPricesDto,
   Last24hPricesResponse,
+  SimulateCyptoPriceDto,
 } from './cpt.dto';
 
 @Controller()
 @ApiTags('Crypto Price Tracker')
 export class CptController {
   constructor(private readonly cptService: CptService) {}
+
+  @Post('/test-alerts')
+  @ApiOperation({ summary: 'Test endpoint' })
+  @ApiResponse({
+    description: 'Test successful',
+    status: HttpStatus.OK,
+  })
+  @ApiResponse({
+    description: 'Bad Request',
+    status: HttpStatus.BAD_REQUEST,
+  })
+  test(@Body() simulateCyptoPriceDto: SimulateCyptoPriceDto) {
+    return this.cptService.testAlerts(simulateCyptoPriceDto);
+  }
 
   @Post('/alert')
   @ApiOperation({ summary: 'Create a new alert' })

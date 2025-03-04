@@ -5,18 +5,26 @@ import {
   CreateAlertDto,
   FetchAlertsDto,
   FetchLast24hPricesDto,
+  SimulateCyptoPriceDto,
 } from './cpt.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CryptoPriceNotificationsEntity } from './entities/crypto.price.notification.entity';
-import { addOrdering, addPagination, logAndHandleAPIError } from '@app/common';
-import { OnEvent } from '@nestjs/event-emitter';
+import {
+  addOrdering,
+  addPagination,
+  CryptoSymbolNameMap,
+  logAndHandleAPIError,
+} from '@app/common';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { CryptoPriceEntity } from './entities/crypto.price.entity';
-import { interval } from 'rxjs';
 
 @Injectable()
 export class CptService {
   private logger = new Logger(CptService.name);
+  private lastAlertMap = new Map<string, Date>();
+
   constructor(
+    private eventEmitter: EventEmitter2,
     @Inject(CptHelpers)
     private readonly cptHelpers: CptHelpers,
     @InjectRepository(CryptoPriceNotificationsEntity)
@@ -24,6 +32,27 @@ export class CptService {
     @InjectRepository(CryptoPriceEntity)
     private readonly cryptoPriceRepository: Repository<CryptoPriceEntity>,
   ) {}
+
+  async testAlerts(simulateCyptoPriceDto: SimulateCyptoPriceDto) {
+    try {
+      const cryptoPrice = await this.cryptoPriceRepository.create({
+        symbol: simulateCyptoPriceDto.symbol,
+        name: CryptoSymbolNameMap[simulateCyptoPriceDto.symbol],
+        usd_price: simulateCyptoPriceDto.usd_price,
+        block_timestamp: new Date(),
+      });
+
+      this.eventEmitter.emit('price.surge.alert', cryptoPrice);
+      this.eventEmitter.emit('target.price.alert', cryptoPrice);
+
+      return {
+        message: 'Test successful',
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      logAndHandleAPIError(this.logger, error);
+    }
+  }
 
   /**
    * Creates an alert based on the provided data.
@@ -198,6 +227,68 @@ export class CptService {
       await this.cryptoPriceNotificationsRepository.remove(alerts);
     } catch (error) {
       this.logger.error('Error handling target price alert', error);
+    }
+  }
+
+  @OnEvent('price.surge.alert')
+  async handlePriceSurgeAlert(cryptoPrice: CryptoPriceEntity) {
+    try {
+      // Get the time 60 minutes ago from the current crypto price timestamp.
+      const sixtyMinutesAgo = new Date(
+        new Date(cryptoPrice.block_timestamp).getTime() - 60 * 60 * 1000,
+      );
+
+      // Retrieve the most recent price record from at or before 60 minutes ago.
+      const previousPriceRecord = await this.cryptoPriceRepository.findOne({
+        where: {
+          symbol: cryptoPrice.symbol,
+          block_timestamp: LessThanOrEqual(sixtyMinutesAgo),
+        },
+        order: { block_timestamp: 'DESC' },
+      });
+
+      if (!previousPriceRecord) {
+        this.logger.warn(
+          `No price record found from 60 minutes ago for symbol ${cryptoPrice.symbol}`,
+        );
+        return;
+      }
+
+      // Calculate the percentage increase.
+      const previousPrice = previousPriceRecord.usd_price;
+      const currentPrice = cryptoPrice.usd_price;
+      const percentIncrease =
+        ((currentPrice - previousPrice) / previousPrice) * 100;
+
+      // Only proceed if the increase is 3% or more.
+      if (percentIncrease >= Number(process.env.PRICE_SURGE_PERCENTAGE)) {
+        const now = new Date();
+        const lastAlertTime = this.lastAlertMap.get(cryptoPrice.symbol);
+
+        // Check cooldown: only send an alert if more than 60 minutes have passed since the last alert.
+        if (
+          lastAlertTime &&
+          now.getTime() - lastAlertTime.getTime() < 60 * 60 * 1000
+        ) {
+          this.logger.log(
+            `Alert cooldown active for ${cryptoPrice.symbol}. No email sent.`,
+          );
+          return;
+        }
+
+        // Send the price surge alert email.
+        await this.cptHelpers.sendEmail({
+          to: process.env.PRICE_SURGE_ALERT_EMAIL,
+          subject: 'Crypto Price Surge Alert',
+          body: `The price of ${cryptoPrice.name} has surged by ${percentIncrease.toFixed(2)}% compared to 60 minutes ago. Current price: $${currentPrice}.`,
+        });
+
+        // Update the cooldown timestamp for this crypto.
+        this.lastAlertMap.set(cryptoPrice.symbol, now);
+        this.logger.log(`Price surge alert sent for ${cryptoPrice.symbol}`);
+      }
+    } catch (error) {
+      this.logger.error('Error handling price surge alert', error);
     }
   }
 }
