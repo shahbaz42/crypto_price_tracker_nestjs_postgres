@@ -14,10 +14,10 @@ export class CptCronService {
   @Interval(300000) // Every 5 minutes
   async handleInterval1s() {
     try {
-      const cryptoPrice = await this.cptHelpers.saveEthPrice();
+      // const cryptoPrice = await this.cptHelpers.saveEthPrice();
 
       // send price target notifications
-      this.eventEmitter.emit('target.price.alert', cryptoPrice);
+      // this.eventEmitter.emit('target.price.alert', cryptoPrice);
 
       // To-do: send price surge alert
     } catch (error) {
