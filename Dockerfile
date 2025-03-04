@@ -1,5 +1,5 @@
 # Base stage to have yarn installed
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Development stage to install dependencies and build the app
 FROM base AS development 

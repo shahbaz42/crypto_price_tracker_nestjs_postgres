@@ -25,16 +25,21 @@ services:
     depends_on:
       - postgres
     ports:
-      - 8000:3000
+      - 3000:3000
     networks:
       - app_network
     environment:
-      - AUTH_GRPC_URL=auth:50001
+      - PORT=3000
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=123456789
       - POSTGRES_DB=crypto_price_tracker
+      - MORALIS_API_KEY=${MORALIS_API_KEY?Error}  
+      - EMAIL_USER=${EMAIL_USER?Error}  
+      - EMAIL_PASS=${EMAIL_PASS?Error} 
+      - PRICE_SURGE_ALERT_EMAIL=${PRICE_SURGE_ALERT_EMAIL?Error}  
+      - PRICE_SURGE_PERCENTAGE=${PRICE_SURGE_PERCENTAGE?Error}
 
 networks:
   app_network:
