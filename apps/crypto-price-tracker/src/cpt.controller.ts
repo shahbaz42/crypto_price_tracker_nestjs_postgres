@@ -5,8 +5,10 @@ import {
   CreateAlertDto,
   FetchAlertsDto,
   FetchLast24hPricesDto,
+  GetSwapRateDto,
   Last24hPricesResponse,
   SimulateCyptoPriceDto,
+  SwapRateResponse,
 } from './cpt.dto';
 
 @Controller()
@@ -69,5 +71,20 @@ export class CptController {
   })
   fetchLast24hPrices(@Query() fetchLast24hPricesDto: FetchLast24hPricesDto) {
     return this.cptService.fetchLast24hPricesHourly(fetchLast24hPricesDto);
+  }
+
+  @Get('/swap/rate')
+  @ApiOperation({ summary: 'Get swap rate from ETH to BTC' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Swap rate calculated successfully',
+    type: SwapRateResponse,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input',
+  })
+  getSwapRate(@Query() dto: GetSwapRateDto): Promise<SwapRateResponse> {
+    return this.cptService.getSwapRate(dto);
   }
 }

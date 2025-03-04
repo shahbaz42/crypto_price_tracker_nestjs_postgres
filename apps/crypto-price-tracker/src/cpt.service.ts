@@ -5,7 +5,9 @@ import {
   CreateAlertDto,
   FetchAlertsDto,
   FetchLast24hPricesDto,
+  GetSwapRateDto,
   SimulateCyptoPriceDto,
+  SwapRateResponse,
 } from './cpt.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CryptoPriceNotificationsEntity } from './entities/crypto.price.notification.entity';
@@ -187,6 +189,55 @@ export class CptService {
       };
     } catch (error) {
       logAndHandleAPIError(this.logger, error);
+    }
+  }
+
+  /**
+   * Calculates the swap rate from ETH to BTC.
+   * @param dto contains the ethereum amount.
+   * @returns Object with how much BTC can be obtained, fee in ETH, and fee in USD.
+   */
+  async getSwapRate(dto: GetSwapRateDto): Promise<SwapRateResponse> {
+    try {
+      const { eth_amount } = dto;
+      if (!eth_amount || eth_amount <= 0) {
+        throw new Error('Invalid ETH amount');
+      }
+
+      // Fetch the current ETH and BTC prices using helper methods.
+      // Assuming fetchEthPrice() and fetchBtcPrice() return a response with jsonResponse.usdPrice.
+      const ethResponse = (await this.cptHelpers.fetchEthPrice()) as any;
+      const btcResponse = (await this.cptHelpers.fetchBtcPrice()) as any;
+
+      if (!ethResponse || !btcResponse) {
+        throw new Error('Could not fetch price data');
+      }
+
+      const ethPriceUsd = ethResponse.jsonResponse.usdPrice;
+      const btcPriceUsd = btcResponse.jsonResponse.usdPrice;
+
+      // Fee percentage is 3%
+      const feePercentage = 0.03;
+
+      // Calculate fee in ETH and USD.
+      const feeEth = eth_amount * feePercentage;
+      const feeUsd = feeEth * ethPriceUsd;
+
+      // Effective ETH amount after fee.
+      const effectiveEth = eth_amount - feeEth;
+      // Convert effective ETH to USD.
+      const effectiveUsd = effectiveEth * ethPriceUsd;
+      // Calculate how much BTC you get with effective USD amount.
+      const btcAmount = effectiveUsd / btcPriceUsd;
+
+      return {
+        btc_amount: btcAmount,
+        fee_eth: feeEth,
+        fee_usd: feeUsd,
+      };
+    } catch (error) {
+      this.logger.error('Error calculating swap rate', error);
+      throw error;
     }
   }
 

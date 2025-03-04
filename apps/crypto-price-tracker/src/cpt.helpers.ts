@@ -50,7 +50,7 @@ export class CptHelpers {
    * @returns A promise that resolves to the price of Ethereum token.
    * @throws If there is an error while fetching the price.
    */
-  private async fetchEthPrice() {
+  async fetchEthPrice() {
     try {
       const address = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
       const chain = EvmChain.ETHEREUM; // Ethereum Mainnet

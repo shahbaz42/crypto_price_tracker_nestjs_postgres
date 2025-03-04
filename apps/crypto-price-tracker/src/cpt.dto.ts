@@ -134,3 +134,32 @@ export class SimulateCyptoPriceDto {
   @IsNumber()
   usd_price: number;
 }
+
+export class GetSwapRateDto {
+  @ApiProperty({
+    description: 'Amount of Ethereum to swap',
+    example: 1,
+  })
+  @IsNotEmpty()
+  eth_amount: number;
+}
+
+export class SwapRateResponse {
+  @ApiProperty({
+    description: 'Amount of BTC that can be obtained for the given ETH amount after fee deduction',
+    example: 0.05,
+  })
+  btc_amount: number;
+
+  @ApiProperty({
+    description: 'Fee charged in ETH',
+    example: 0.03,
+  })
+  fee_eth: number;
+
+  @ApiProperty({
+    description: 'Fee charged in USD',
+    example: 60,
+  })
+  fee_usd: number;
+}
