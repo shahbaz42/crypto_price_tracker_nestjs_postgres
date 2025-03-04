@@ -8,6 +8,8 @@ This project is a Nest.js-based crypto price tracker that fetches and monitors t
 - **Clean code Monorepo architecture**  
 - **Dockerized setup** (Runs with `docker-compose up --build`)
 
+API Doc Link: [http://34.131.33.141:3000/api-docs](http://34.131.33.141:3000/api-docs)
+
 ## How to run this project using docker compose
 1. Clone this repository
 2. Create a .env.crypto-price-tracker
@@ -30,7 +32,7 @@ PRICE_SURGE_PERCENTAGE=<The percentage increase in price that will trigger an al
 ```
 2. Run the following command in the root directory of the project
 ```bash
-docker compose --env-file .env.crypto-price-tracker up --build
+docker-compose --env-file .env.crypto-price-tracker up --build
 ```
 
 ## How to run the project locally 
